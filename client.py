@@ -75,10 +75,10 @@ def testLogin():
 
 if __name__ == "__main__":
     with picamera.PiCamera() as cam:
-        dateNow = time.strftime('%Y-%m-%d_%h-%M-%S', time.time())
-        cam.start_preview()
-        time.sleep(5)
+        dateNow = time.strftime('%Y-%m-%d_%H-%M-%S', time.gmtime())
+        #cam.start_preview()
+        #time.sleep(5)
         cam.capture('/tmp/image-%s.jpg' % dateNow)
-        cam.stop_preview()
+        #cam.stop_preview()
 
     
