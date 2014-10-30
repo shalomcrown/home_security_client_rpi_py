@@ -16,7 +16,7 @@ try:
 except:
     print """
         Couldn't import picamera. Try the following and then run again:
-        sudo apt-get install python-picamera python3-picamera python-rpi.gpio imagemagick python-pythonmagick
+        sudo apt-get install python-picamera python3-picamera python-rpi.gpio imagemagick python-pythonmagick python-wand
     """
     exit(-1)
 
