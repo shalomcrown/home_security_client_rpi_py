@@ -16,10 +16,13 @@ try:
 except:
     print """
         Couldn't import picamera. Try the following and then run again:
-        sudo apt-get install python-picamera python3-picamera python-rpi.gpio imagemagick python-pythonmagick python-wand
+        sudo apt-get install python-picamera python3-picamera python-rpi.gpio imagemagick libmagickwand-dev
+        sudo pip install Wand
     """
     exit(-1)
 
+
+previousImage = None
 
 #====================================================
 
@@ -68,17 +71,37 @@ class LoginDetails:
 def testLogin():
    pass
 
+#=======================================
+
+def takePicture():
+    with picamera.PiCamera() as cam:
+        dateNow = time.strftime('%Y-%m-%d_%H-%M-%S', time.gmtime())
+        fileName = '/tmp/image-%s.jpg' % dateNow
+        cam.capture(fileName)
+        return fileName
+
+#=======================================
+
+def doNextImage():
+    nextImage = takePicture()
+
+    if previousImage:
+        pass
+
+    previousImage = nextImage
+
+
+
+def imageCycle():
+    while True:
+        doNextImage()
+        time.sleep(0.5)
 
 #=======================================
 #=======================================
 
 
 if __name__ == "__main__":
-    with picamera.PiCamera() as cam:
-        dateNow = time.strftime('%Y-%m-%d_%H-%M-%S', time.gmtime())
-        #cam.start_preview()
-        #time.sleep(5)
-        cam.capture('/tmp/image-%s.jpg' % dateNow)
-        #cam.stop_preview()
+    takePicture()
 
     
