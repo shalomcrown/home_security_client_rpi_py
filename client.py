@@ -9,20 +9,22 @@ Created on Sep 14, 2014
 from Tkinter import *
 from ttk import *
 import time
+import logging
+
 
 
 try:
     import picamera
+    from PIL import Image
+    import ImageChops
 except:
     print """
-        Couldn't import picamera. Try the following and then run again:
-        sudo apt-get install python-picamera python3-picamera python-rpi.gpio imagemagick libmagickwand-dev
-        sudo pip install Wand
+        Couldn't import some packages. Try the following and then run again:
+        sudo apt-get install python-picamera python3-picamera python-rpi.gpio python-imaging
     """
     exit(-1)
 
-
-previousImage = None
+logger = logging.getLogger(__name__)
 
 #====================================================
 
@@ -74,34 +76,56 @@ def testLogin():
 #=======================================
 
 def takePicture():
+    logger.info('Take a picture')
     with picamera.PiCamera() as cam:
         dateNow = time.strftime('%Y-%m-%d_%H-%M-%S', time.gmtime())
         fileName = '/tmp/image-%s.jpg' % dateNow
         cam.capture(fileName)
+        logger.info('Picture taken %s', fileName)
         return fileName
 
 #=======================================
 
-def doNextImage():
-    nextImage = takePicture()
+def rmsDiff(im1, im2):
+    "Calculate the root-mean-square difference between two images"
+    diff = ImageChops.difference(im1, im2)
+    h = diff.histogram()
+    sq = (value*(idx**2) for idx, value in enumerate(h))
+    sum_of_squares = sum(sq)
+    rms = math.sqrt(sum_of_squares/float(im1.size[0] * im1.size[1]))
+    return rms
 
-    if previousImage:
-        pass
+#=======================================
 
-    previousImage = nextImage
+def doNextImage(previousImageFile):
+    nextImageFile = takePicture()
+
+    if previousImageFile:
+        logger.info("Have previous file %s", previousImageFile);
+        with Image.open(nextImageFile) as nextImage:
+            with Image.open(previousImageFile) as previousImage:
+                diff = rmsDiff(previousImage, nextImage)
+                logger.info("Diff is: %f", diff)
+    
+    return nextImageFile
 
 
-
-def imageCycle():
+#=======================================
+def imageCycle(cycleTime):
+    previousImageFile = None
+    
     while True:
-        doNextImage()
-        time.sleep(0.5)
+        previousImageFile = doNextImage(previousImageFile)
+        time.sleep(cycleTime)
 
 #=======================================
 #=======================================
 
 
 if __name__ == "__main__":
-    takePicture()
+    logging.basicConfig(format='%(asctime)s %(message)s', level=logging.DEBUG)
+    logger.setLevel(logging.DEBUG)
+
+    imageCycle(0.5)
 
     
