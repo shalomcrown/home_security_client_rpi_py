@@ -15,7 +15,7 @@ import logging
 
 try:
     import picamera
-    from PIL import Image
+    import Image
     import ImageChops
 except:
     print """
@@ -102,10 +102,10 @@ def doNextImage(previousImageFile):
 
     if previousImageFile:
         logger.info("Have previous file %s", previousImageFile);
-        with Image.open(nextImageFile) as nextImage:
-            with Image.open(previousImageFile) as previousImage:
-                diff = rmsDiff(previousImage, nextImage)
-                logger.info("Diff is: %f", diff)
+        nextImage = Image.open(nextImageFile)
+        previousImage = Image.open(previousImageFile)
+        diff = rmsDiff(previousImage, nextImage)
+        logger.info("Diff is: %f", diff)
     
     return nextImageFile
 
