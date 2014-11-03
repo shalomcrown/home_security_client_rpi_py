@@ -10,6 +10,7 @@ from Tkinter import *
 from ttk import *
 import time
 import logging
+import math
 
 
 
@@ -75,30 +76,30 @@ def testLogin():
 
 #=======================================
 
-def takePicture():
+def takePicture(camera):
     logger.info('Take a picture')
-    with picamera.PiCamera() as cam:
-        dateNow = time.strftime('%Y-%m-%d_%H-%M-%S', time.gmtime())
-        fileName = '/tmp/image-%s.jpg' % dateNow
-        cam.capture(fileName)
-        logger.info('Picture taken %s', fileName)
-        return fileName
+    dateNow = time.strftime('%Y-%m-%d_%H-%M-%S', time.gmtime())
+    fileName = '/tmp/image-%s.jpg' % dateNow
+    camera.capture(fileName)
+    logger.info('Picture taken %s', fileName)
+    return fileName
 
 #=======================================
 
 def rmsDiff(im1, im2):
     "Calculate the root-mean-square difference between two images"
-    diff = ImageChops.difference(im1, im2)
-    h = diff.histogram()
-    sq = (value*(idx**2) for idx, value in enumerate(h))
+    #diff = ImageChops.difference(im1, im2)
+    h1 = im1.histogram() #diff.histogram()
+    h2 = im2.histogram()
+    sq = (((pix1 - pix2)**2) for pix1, pix2 in zip(h1, h2))
     sum_of_squares = sum(sq)
-    rms = math.sqrt(sum_of_squares/float(im1.size[0] * im1.size[1]))
+    rms = math.sqrt(sum_of_squares / min(len(h1), len(h2)))
     return rms
 
 #=======================================
 
-def doNextImage(previousImageFile):
-    nextImageFile = takePicture()
+def doNextImage(previousImageFile, camera):
+    nextImageFile = takePicture(camera)
 
     if previousImageFile:
         logger.info("Have previous file %s", previousImageFile);
@@ -113,10 +114,11 @@ def doNextImage(previousImageFile):
 #=======================================
 def imageCycle(cycleTime):
     previousImageFile = None
-    
-    while True:
-        previousImageFile = doNextImage(previousImageFile)
-        time.sleep(cycleTime)
+
+    with picamera.PiCamera() as camera:
+        while True:
+            previousImageFile = doNextImage(previousImageFile, camera)
+            time.sleep(cycleTime)
 
 #=======================================
 #=======================================
