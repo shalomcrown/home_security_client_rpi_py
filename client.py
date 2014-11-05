@@ -11,6 +11,7 @@ from ttk import *
 import time
 import logging
 import math
+import io
 
 
 
@@ -76,7 +77,7 @@ def testLogin():
 
 #=======================================
 
-def takePicture(camera):
+def takePictureIntoFile(camera):
     logger.info('Take a picture')
     dateNow = time.strftime('%Y-%m-%d_%H-%M-%S', time.gmtime())
     fileName = '/tmp/image-%s.jpg' % dateNow
@@ -86,11 +87,36 @@ def takePicture(camera):
 
 #=======================================
 
+def takePictureIntoImage(camera):
+    stream = io.BytesIO()
+    camera.capture(stream, format='jpeg')
+    stream.seek(0)
+    image = Image.open(stream)
+    return image
+
+#=======================================
+def normalizeComponent(histogram, offset, length):
+    pass
+
+#=======================================
+
+def normalizeHistogram(histogram):
+    componentLength = len(histogram) / 3
+
+    for component in range(1,3):
+        normalizeComponent(histogram, componentLength * component, componentLength)
+
+#=======================================
+
 def rmsDiff(im1, im2):
     "Calculate the root-mean-square difference between two images"
     #diff = ImageChops.difference(im1, im2)
-    h1 = im1.histogram() #diff.histogram()
+    #diff.histogram()
+    
+    h1 = im1.histogram() 
     h2 = im2.histogram()
+    
+    
     sq = (((pix1 - pix2)**2) for pix1, pix2 in zip(h1, h2))
     sum_of_squares = sum(sq)
     rms = math.sqrt(sum_of_squares / min(len(h1), len(h2)))
@@ -98,26 +124,26 @@ def rmsDiff(im1, im2):
 
 #=======================================
 
-def doNextImage(previousImageFile, camera):
-    nextImageFile = takePicture(camera)
+def doNextImage(previousImage, camera):
+    nextImage = takePictureIntoImage(camera)
 
-    if previousImageFile:
-        logger.info("Have previous file %s", previousImageFile);
-        nextImage = Image.open(nextImageFile)
-        previousImage = Image.open(previousImageFile)
+    if previousImage:
+        logger.info("Have previous file %s", previousImage);
+        #nextImage = Image.open(nextImageFile)
+        #previousImage = Image.open(previousImageFile)
         diff = rmsDiff(previousImage, nextImage)
         logger.info("Diff is: %f", diff)
     
-    return nextImageFile
+    return nextImage
 
 
 #=======================================
 def imageCycle(cycleTime):
-    previousImageFile = None
+    previousImage = None
 
     with picamera.PiCamera() as camera:
         while True:
-            previousImageFile = doNextImage(previousImageFile, camera)
+            previousImage = doNextImage(previousImage, camera)
             time.sleep(cycleTime)
 
 #=======================================
