@@ -18,20 +18,16 @@ import os
 
 
 try:
-    if os.uname()[1] == 'raspberrypi':
-        import picamera
-        isPy = True
-    else:
-        import pygame
-        import pygame.camera
-        from pygame.locals import *
-        isPy = False
+    import pygame
+    import pygame.camera
+    from pygame.locals import *
     import Image
     import ImageChops
 except:
     print """
         Couldn't import some packages. Try the following and then run again:
-        sudo apt-get install python-picamera python3-picamera python-rpi.gpio python-imaging
+        sudo apt-get install python-rpi.gpio python-imaging pygame
+        sudo modprobe bcm2835-v4l2
     """
     exit(-1)
 
@@ -97,17 +93,10 @@ def takePictureIntoFile(camera):
 #=======================================
 
 def takePictureIntoImage(camera):
-    if isPy:
-        stream = io.BytesIO()
-        camera.capture(stream, format='jpeg')
-        stream.seek(0)
-        image = Image.open(stream)
-        return image
-    else:
-        camSurf = camera.get_image()
-        data = pygame.image.tostring( camSurf, 'RGBA')
-        image = Image.fromstring('RGBA', camSurf.get_size(), data)
-        return image
+    camSurf = camera.get_image()
+    data = pygame.image.tostring( camSurf, 'RGBA')
+    image = Image.fromstring('RGBA', camSurf.get_size(), data)
+    return image
 
 
 
@@ -157,18 +146,11 @@ def doNextImage(previousImage, camera):
 #=======================================
 def imageCycle(cycleTime):
     previousImage = None
-
-    if isPy:
-        with picamera.PiCamera() as camera:
-            while True:
-                previousImage = doNextImage(previousImage, camera)
-                time.sleep(cycleTime)
-    else:
-        cam = pygame.camera.Camera("/dev/video0",(640,480))
-        cam.start()
-        while True:
-            previousImage = doNextImage(previousImage, cam)
-            time.sleep(cycleTime)
+    cam = pygame.camera.Camera("/dev/video0",(640,480))
+    cam.start()
+    while True:
+        previousImage = doNextImage(previousImage, cam)
+        time.sleep(cycleTime)
 
 #=======================================
 #=======================================
@@ -178,9 +160,8 @@ if __name__ == "__main__":
     logging.basicConfig(format='%(asctime)s %(message)s', level=logging.DEBUG)
     logger.setLevel(logging.DEBUG)
     
-    if not isPy:
-        pygame.init()
-        pygame.camera.init()
+    pygame.init()
+    pygame.camera.init()
 
     imageCycle(0.5)
 
