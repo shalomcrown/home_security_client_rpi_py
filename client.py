@@ -23,10 +23,13 @@ try:
     from pygame.locals import *
     import Image
     import ImageChops
+    import numpy as np
+    import cv2
+    import cv
 except:
     print """
         Couldn't import some packages. Try the following and then run again:
-        sudo apt-get install python-rpi.gpio python-imaging pygame
+        sudo apt-get install python-rpi.gpio python-imaging pygame python-numpy python-opencv
         sudo modprobe bcm2835-v4l2
     """
     exit(-1)
@@ -80,23 +83,19 @@ class LoginDetails:
 def testLogin():
     pass
 
-#=======================================
-
-def takePictureIntoFile(camera):
-    logger.info('Take a picture')
-    dateNow = time.strftime('%Y-%m-%d_%H-%M-%S', time.gmtime())
-    fileName = '/tmp/image-%s.jpg' % dateNow
-    camera.capture(fileName)
-    logger.info('Picture taken %s', fileName)
-    return fileName
 
 #=======================================
+#     dateNow = time.strftime('%Y-%m-%d_%H-%M-%S', time.gmtime())
 
 def takePictureIntoImage(camera):
-    camSurf = camera.get_image()
-    data = pygame.image.tostring( camSurf, 'RGBA')
-    image = Image.fromstring('RGBA', camSurf.get_size(), data)
-    return image
+#     camSurf = camera.get_image()
+#     data = pygame.image.tostring( camSurf, 'RGBA')
+#     image = Image.fromstring('RGBA', camSurf.get_size(), data)
+
+    retval, im = camera.read()
+    return im
+
+
 
 
 
@@ -114,18 +113,26 @@ def normalizeHistogram(histogram):
 
 #=======================================
 
-def rmsDiff(im1, im2):
+def diffCoeff(im1, im2):
     "Calculate the root-mean-square difference between two images"
-    # diff = ImageChops.difference(im1, im2)
-    # diff.histogram()
+    hsv1 = cv2.cvtColor(im1,cv2.COLOR_BGR2HSV)
+    hsv2 = cv2.cvtColor(im2,cv2.COLOR_BGR2HSV)
 
-    h1 = im1.histogram()
-    h2 = im2.histogram()
+    h1 = cv2.calcHist([hsv1], [0, 1], None, [180, 256], [0, 180, 0, 256])
+    h2 = cv2.calcHist([hsv2], [0, 1], None, [180, 256], [0, 180, 0, 256])
 
+#     h1rgb = cv2.calcHist([im1], [0, 1, 2], None, [256, 256, 256], [0, 256, 0, 256, 0, 256])
+#     h2rgb = cv2.calcHist([im2], [0, 1, 2], None, [256, 256, 256], [0, 256, 0, 256, 0, 256])
+        
+    cv2.normalize(h1,h1,0,255,cv2.NORM_MINMAX)
+    cv2.normalize(h2,h2,0,255,cv2.NORM_MINMAX)
+    
+#     cv2.normalize(h1rgb,h1rgb,0,255,cv2.NORM_MINMAX)
+#     cv2.normalize(h2rgb,h2rgb,0,255,cv2.NORM_MINMAX)
+    
+    rms = cv2.compareHist(h1, h2, 0)
+#     rms = cv2.compareHist(h1rgb, h2rgb, 0)
 
-    sq = (((pix1 - pix2) ** 2) for pix1, pix2 in zip(h1, h2))
-    sum_of_squares = sum(sq)
-    rms = math.sqrt(sum_of_squares / min(len(h1), len(h2)))
     return rms
 
 #=======================================
@@ -133,11 +140,11 @@ def rmsDiff(im1, im2):
 def doNextImage(previousImage, camera):
     nextImage = takePictureIntoImage(camera)
 
-    if previousImage:
-        logger.info("Have previous file %s", previousImage);
+    if previousImage is not None:
+        logger.info("Have previous file");
         # nextImage = Image.open(nextImageFile)
         # previousImage = Image.open(previousImageFile)
-        diff = rmsDiff(previousImage, nextImage)
+        diff = diffCoeff(previousImage, nextImage)
         logger.info("Diff is: %f", diff)
 
     return nextImage
@@ -146,11 +153,14 @@ def doNextImage(previousImage, camera):
 #=======================================
 def imageCycle(cycleTime):
     previousImage = None
-    cam = pygame.camera.Camera("/dev/video0",(640,480))
-    cam.start()
+    cam = cv2.VideoCapture(0)
+    cv2.namedWindow('Homesec image')
+    
     while True:
         previousImage = doNextImage(previousImage, cam)
-        time.sleep(cycleTime)
+        cv2.imshow('Homesec image', previousImage);
+        cv2.waitKey(500)
+        #time.sleep(cycleTime)
 
 #=======================================
 #=======================================
@@ -160,9 +170,6 @@ if __name__ == "__main__":
     logging.basicConfig(format='%(asctime)s %(message)s', level=logging.DEBUG)
     logger.setLevel(logging.DEBUG)
     
-    pygame.init()
-    pygame.camera.init()
-
     imageCycle(0.5)
 
 
