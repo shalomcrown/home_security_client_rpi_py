@@ -8,28 +8,19 @@ Created on Sep 14, 2014
 
 from Tkinter import *
 from ttk import *
-import time
 import logging
-import math
-import io
-import os
 
 
 
 
 try:
-    import pygame
-    import pygame.camera
-    from pygame.locals import *
-    import Image
-    import ImageChops
     import numpy as np
     import cv2
     import cv
 except:
     print """
         Couldn't import some packages. Try the following and then run again:
-        sudo apt-get install python-rpi.gpio python-imaging pygame python-numpy python-opencv
+        sudo apt-get install python-numpy python-opencv
         sudo modprobe bcm2835-v4l2
     """
     exit(-1)
@@ -154,11 +145,11 @@ def doNextImage(previousImage, camera):
 def imageCycle(cycleTime):
     previousImage = None
     cam = cv2.VideoCapture(0)
-    cv2.namedWindow('Homesec image')
+    #cv2.namedWindow('Homesec image')
     
     while True:
         previousImage = doNextImage(previousImage, cam)
-        cv2.imshow('Homesec image', previousImage);
+        #cv2.imshow('Homesec image', previousImage);
         cv2.waitKey(500)
         #time.sleep(cycleTime)
 
