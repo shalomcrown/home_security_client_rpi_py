@@ -9,6 +9,7 @@ Created on Sep 14, 2014
 from Tkinter import *
 from ttk import *
 import logging
+import time
 
 
 
@@ -150,8 +151,8 @@ def imageCycle(cycleTime):
     while True:
         previousImage = doNextImage(previousImage, cam)
         #cv2.imshow('Homesec image', previousImage);
-        cv2.waitKey(500)
-        #time.sleep(cycleTime)
+        #cv2.waitKey(500)
+        time.sleep(cycleTime)
 
 #=======================================
 #=======================================
