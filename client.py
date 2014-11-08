@@ -130,6 +130,7 @@ def diffCoeff(im1, im2):
 #=======================================
 
 def doNextImage(previousImage, camera):
+    logger.info("Next image")
     nextImage = takePictureIntoImage(camera)
 
     if previousImage is not None:
@@ -162,6 +163,7 @@ if __name__ == "__main__":
     logging.basicConfig(format='%(asctime)s %(message)s', level=logging.DEBUG)
     logger.setLevel(logging.DEBUG)
     
+    logger.info("Starting up")
     imageCycle(0.5)
 
 
