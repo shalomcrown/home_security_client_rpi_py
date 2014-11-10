@@ -1,0 +1,9 @@
+Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: homesec-client
+Upstream-Contact: Shalom Crown, <shalomcrown@gmail.com>
+
+Files: *
+Copyright: 2014, Shalom Crown, <shalomcrown@gmail.com>
+License: (GPL-2+ | LGPL-2 | GPL-3)
+ .
+ Unless there is a it can be found in /usr/share/common-licenses

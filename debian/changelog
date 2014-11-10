@@ -1,0 +1,5 @@
+PACKAGE (VERSION) UNRELEASED; urgency=medium
+
+  * Initial release. (Closes: #XXXXXX)
+
+ -- Shalom Crown <shalomcrown@gmail.com>  Mon, 10 Nov 2014 19:17:16 +0200
