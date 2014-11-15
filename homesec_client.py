@@ -10,6 +10,8 @@ from Tkinter import *
 from ttk import *
 import logging
 import time
+import ConfigParser
+import os
 
 
 
@@ -31,6 +33,25 @@ logger = logging.getLogger(__name__)
 #====================================================
 
 class LoginDetails:
+    
+    def __init__(self):
+        self.email_section = 'email'
+        self.config = ConfigParser.ConfigParser()
+        self.config.read(os.path.expanduser('~/.homesec'))
+        
+        if self.config.has_section(self.email_section):
+            self.url = self.config.get(self.email_section, 'url')
+            self.username = self.config.get(self.email_section, 'username')
+            self.password = self.config.get(self.email_section, 'password')
+        else:
+            if self.run():
+                self.config.add_section(self.email_section)
+                self.config.set(self.email_section, 'email', self.username)
+                self.config.set(self.email_section, 'url', self.url)
+                self.config.set(self.email_section, 'password', self.password)
+                with open(os.path.expanduser('~/.homesec'), "w") as f:
+                    self.config.write(f)
+    
     def pressedCancel(self):
         self.OK = False
         self.root.destroy()
@@ -46,11 +67,11 @@ class LoginDetails:
         self.root = Tk()
         self.root.title('HomeSec - Login')
         
-        label = Label(self.root, text='Server login details', font="Verdana 10 bold")
+        label = Label(self.root, text='E-mail login details', font="Verdana 10 bold")
         label.grid(column=0, columnspan=2, row=0)
         
         Label(self.root, text="Server URL").grid(row=1, column=0)
-        self.serverUrlMenu = Combobox(self.root, values=["localhost:8080"])
+        self.serverUrlMenu = Combobox(self.root, values=["mail.google.com"])
         self.serverUrlMenu.grid(row=1, column=1)
         
         Label(self.root, text="User Name").grid(row=2, column=0)
@@ -72,6 +93,7 @@ class LoginDetails:
 
 
 
+
 def testLogin():
     pass
 
@@ -86,9 +108,6 @@ def takePictureIntoImage(camera):
 
     retval, im = camera.read()
     return im
-
-
-
 
 
 #=======================================
@@ -116,8 +135,8 @@ def diffCoeff(im1, im2):
 #     h1rgb = cv2.calcHist([im1], [0, 1, 2], None, [256, 256, 256], [0, 256, 0, 256, 0, 256])
 #     h2rgb = cv2.calcHist([im2], [0, 1, 2], None, [256, 256, 256], [0, 256, 0, 256, 0, 256])
         
-    cv2.normalize(h1,h1,0,255,cv2.NORM_MINMAX)
-    cv2.normalize(h2,h2,0,255,cv2.NORM_MINMAX)
+    #cv2.normalize(h1,h1,0,255,cv2.NORM_MINMAX)
+    #cv2.normalize(h2,h2,0,255,cv2.NORM_MINMAX)
     
 #     cv2.normalize(h1rgb,h1rgb,0,255,cv2.NORM_MINMAX)
 #     cv2.normalize(h2rgb,h2rgb,0,255,cv2.NORM_MINMAX)
@@ -129,7 +148,7 @@ def diffCoeff(im1, im2):
 
 #=======================================
 
-def doNextImage(previousImage, camera):
+def doNextImage(previousImage, camera, loginDetails):
     logger.info("Next image")
     nextImage = takePictureIntoImage(camera)
 
@@ -139,21 +158,32 @@ def doNextImage(previousImage, camera):
         # previousImage = Image.open(previousImageFile)
         diff = diffCoeff(previousImage, nextImage)
         logger.info("Diff is: %f", diff)
-
+        
+        if diff < 0.99:
+            pass
+        
     return nextImage
 
 
 #=======================================
 def imageCycle(cycleTime):
     previousImage = None
+    loginDetails = LoginDetails()
     cam = cv2.VideoCapture(0)
     cam.set(cv.CV_CAP_PROP_FRAME_WIDTH, 640)
     cam.set(cv.CV_CAP_PROP_FRAME_HEIGHT, 480)
     
     #cv2.namedWindow('Homesec image')
     
+    # warm camera up
+    for i in range(10,0,-1):
+        logger.info('Warming up: %d', i)
+        time.sleep(cycleTime)
+        takePictureIntoImage(cam)
+
+    
     while True:
-        previousImage = doNextImage(previousImage, cam)
+        previousImage = doNextImage(previousImage, cam, loginDetails)
         #cv2.imshow('Homesec image', previousImage);
         #cv2.waitKey(500)
         time.sleep(cycleTime)

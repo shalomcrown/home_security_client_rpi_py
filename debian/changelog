@@ -1,4 +1,4 @@
-PACKAGE (VERSION) UNRELEASED; urgency=medium
+homesec-client (1.0) UNRELEASED; urgency=medium
 
   * Initial release. (Closes: #XXXXXX)
 
