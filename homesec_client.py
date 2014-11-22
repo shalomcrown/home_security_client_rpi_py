@@ -12,7 +12,9 @@ import logging
 import time
 import ConfigParser
 import os
-
+import smtplib
+from email.mime.image import MIMEImage
+from email.mime.multipart import MIMEMultipart
 
 
 
@@ -36,6 +38,9 @@ class LoginDetails:
     
     def __init__(self):
         self.email_section = 'email'
+        self.getConfig()
+        
+    def getConfig(self):
         self.config = ConfigParser.ConfigParser()
         self.config.read(os.path.expanduser('~/.homesec'))
         
@@ -49,8 +54,24 @@ class LoginDetails:
                 self.config.set(self.email_section, 'email', self.username)
                 self.config.set(self.email_section, 'url', self.url)
                 self.config.set(self.email_section, 'password', self.password)
+                
+#                 self.sendTestEmail()
+                
                 with open(os.path.expanduser('~/.homesec'), "w") as f:
                     self.config.write(f)
+    
+    
+    def sendTestEmail(self):
+        logger.info('Sending test e-mail')
+        conn = smtplib.SMTP(self.url)
+        conn.starttls()
+        logger.debug("Connected")
+        conn.login(self.username, self.password)
+        logger.debug("logged in")
+        conn.sendmail(self.username, self.username, "Subject: Test message from homesec_client\n\nTest message from homesec client\n.\n")
+        logger.debug("sent")
+        conn.close()
+    
     
     def pressedCancel(self):
         self.OK = False
@@ -71,7 +92,7 @@ class LoginDetails:
         label.grid(column=0, columnspan=2, row=0)
         
         Label(self.root, text="Server URL").grid(row=1, column=0)
-        self.serverUrlMenu = Combobox(self.root, values=["mail.google.com"])
+        self.serverUrlMenu = Combobox(self.root, values=["smtp.gmail.com:587"])
         self.serverUrlMenu.grid(row=1, column=1)
         
         Label(self.root, text="User Name").grid(row=2, column=0)

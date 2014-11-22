@@ -1,5 +1,5 @@
-homesec-client (1.0) UNRELEASED; urgency=medium
+homesec-client (0.1-1) unstable; urgency=low
 
-  * Initial release. (Closes: #XXXXXX)
+  * source package automatically created by stdeb 0.6.0+git
 
- -- Shalom Crown <shalomcrown@gmail.com>  Mon, 10 Nov 2014 19:17:16 +0200
+ -- unknown <unknown@unknown>  Sat, 22 Nov 2014 19:24:06 +0200

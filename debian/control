@@ -1,13 +1,14 @@
-Package:homesec-client
+Source: homesec-client
 Version:1.0
-Architecture:all
 Maintainer:Shalom Crown <shalomcrown@gmail.com>
-Section:python
-Priority:optional
-Source:homesec-client
-Binary:homesec-client
-Build-Depends:debhelper (>= 7),python (>= 2.7~)
-Standards-Version:3.9.2
+Section: python
+Priority: optional
+Build-Depends: python-all (>= 2.7), debhelper (>= 7)
+Standards-Version: 3.9.2
 X-Python-Version: >= 2.7
-Depends:python-numpy,python-opencv,v4l-utils
-Description:Client side of RPi compatible home security bashup
+
+Package: python-homesec-client
+Architecture: all
+Depends: ${misc:Depends}, ${python:Depends}, python-numpy,python-opencv,v4l-utils
+Description: Client side of RPi compatible home security bashup
+
