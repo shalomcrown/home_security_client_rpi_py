@@ -1,0 +1,5 @@
+/python-homesec-client/
+/python-homesec-client.debhelper.log
+/python-homesec-client.postinst.debhelper
+/python-homesec-client.prerm.debhelper
+/python-homesec-client.substvars
